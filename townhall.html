@@ -312,14 +312,6 @@
       opacity: 0.5;
     }
 
-    /* ── Confetti canvas ── */
-    #cfv {
-      position: fixed;
-      inset: 0;
-      z-index: 210;
-      pointer-events: none;
-    }
-
     /* ── Mobile ── */
     @media (max-width: 520px) {
       .card { padding: 18px 20px 16px; margin-top: -17vmin; max-width: 94%; }
@@ -330,8 +322,6 @@
   </style>
 </head>
 <body>
-
-<canvas id="cfv"></canvas>
 
 <!-- Venn image + guess card -->
 <main class="page">
@@ -438,7 +428,6 @@
       return;
     }
     feedback.classList.remove('visible');
-    launchConfetti();
     saveAnswer(value);
 
     overlay.classList.add('active');
@@ -457,53 +446,6 @@
   }
   vid.addEventListener('ended', showEventDetails, { once: true });
   skipBtn.addEventListener('click', showEventDetails);
-
-  /* ── Confetti ── */
-  function launchConfetti() {
-    var cv  = document.getElementById('cfv');
-    var ctx = cv.getContext('2d');
-    var W   = cv.width  = window.innerWidth;
-    var H   = cv.height = window.innerHeight;
-
-    var COLS = ['#20BF61', '#0C2B15', '#90d8ee', '#cdf5be', '#ffffff', '#a2e8c8'];
-    var pts  = [];
-    for (var k = 0; k < 150; k++) {
-      pts.push({
-        x:   Math.random() * W,
-        y:   -20 - Math.random() * 130,
-        vy:  2.4 + Math.random() * 2.6,
-        vx:  (Math.random() - 0.5) * 1.8,
-        r:   5   + Math.random() * 5,
-        col: COLS[Math.floor(Math.random() * COLS.length)],
-        ta:  Math.random() * Math.PI * 2,
-        tai: 0.04 + Math.random() * 0.06,
-      });
-    }
-
-    var start = performance.now();
-
-    function draw(ts) {
-      ctx.clearRect(0, 0, W, H);
-      pts.forEach(function (p) {
-        p.ta += p.tai;
-        p.y  += p.vy;
-        p.x  += p.vx + Math.sin(p.ta) * 0.5;
-        ctx.beginPath();
-        ctx.lineWidth   = p.r / 2;
-        ctx.strokeStyle = p.col;
-        ctx.moveTo(p.x + Math.sin(p.ta) * 5, p.y);
-        ctx.lineTo(p.x,                        p.y + p.r);
-        ctx.stroke();
-      });
-      if (ts - start < 4500) {
-        requestAnimationFrame(draw);
-      } else {
-        ctx.clearRect(0, 0, W, H);
-      }
-    }
-
-    requestAnimationFrame(draw);
-  }
 
   /* ── Word cloud view (#wordcloud) ── */
   var STOPWORDS = {
