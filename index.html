@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; media-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'none';" />
   <title>BCG 2030 Townhall — Your Guess</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -349,6 +350,7 @@
       id="guessInput"
       class="guess-input"
       type="text"
+      maxlength="200"
       placeholder="Type your guess…"
       autocomplete="off"
       autocorrect="off"
