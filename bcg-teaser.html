@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BCG — Something New Is Here</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:    #20BF61;
+      --dark:     #0C2B15;
+      --green-bg: rgba(32, 191, 97, 0.12);
+    }
+
+    body {
+      min-height: 100vh;
+      background: #ffffff;
+      font-family: Georgia, 'Times New Roman', serif;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    /* ── Background circles (recreated from brand asset) ── */
+    .bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .bg-circle {
+      position: absolute;
+      border-radius: 50%;
+      top: 50%;
+    }
+
+    .bg-left {
+      width: 62vmin;
+      height: 62vmin;
+      left: calc(50% - 16vmin);
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle at 44% 40%, #d8f8be 0%, #86dea0 55%, #a8e890 100%);
+      opacity: 0.72;
+    }
+
+    .bg-right {
+      width: 62vmin;
+      height: 62vmin;
+      left: calc(50% + 16vmin);
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle at 54% 38%, #c6f0f8 0%, #84d6ee 55%, #aae2f6 100%);
+      opacity: 0.72;
+    }
+
+    /* ── Card ── */
+    .card {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 700px;
+      background: rgba(255, 255, 255, 0.62);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(32, 191, 97, 0.2);
+      border-radius: 24px;
+      padding: 52px 44px 44px;
+      box-shadow: 0 12px 56px rgba(12, 43, 21, 0.10);
+      text-align: center;
+    }
+
+    .tagline-title {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: clamp(20px, 3.2vw, 26px);
+      color: var(--dark);
+      font-weight: normal;
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    .bcg-mark {
+      font-family: 'Trebuchet MS', Arial, sans-serif;
+      font-size: clamp(42px, 8vw, 66px);
+      font-weight: 800;
+      letter-spacing: 8px;
+      color: var(--dark);
+      line-height: 1;
+      margin-bottom: 32px;
+    }
+
+    /* ── Word tiles ── */
+    .word-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px 10px;
+      justify-content: center;
+      margin-bottom: 32px;
+    }
+
+    .tile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .scramble-hint {
+      font-family: 'Trebuchet MS', monospace;
+      font-size: 9px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--dark);
+      opacity: 0.25;
+    }
+
+    .wrd {
+      padding: 10px 12px;
+      border: 2px solid rgba(32, 191, 97, 0.3);
+      border-radius: 12px;
+      font-family: Georgia, serif;
+      font-size: 15px;
+      color: var(--dark);
+      background: rgba(255, 255, 255, 0.75);
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+      -webkit-appearance: none;
+    }
+
+    .wrd:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px var(--green-bg);
+    }
+
+    .wrd.solved {
+      border-color: var(--green);
+      background: rgba(32, 191, 97, 0.10);
+      color: var(--dark);
+      pointer-events: none;
+      font-weight: bold;
+    }
+
+    /* ── Reveal button ── */
+    .cta {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 100px;
+      padding: 15px 52px;
+      font-family: 'Trebuchet MS', Arial, sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 6px 24px rgba(32, 191, 97, 0.42);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 9px 30px rgba(32, 191, 97, 0.52);
+    }
+
+    .cta:active { transform: translateY(0); }
+
+    .feedback {
+      margin-top: 14px;
+      font-family: 'Trebuchet MS', sans-serif;
+      font-size: 12.5px;
+      color: #a03030;
+      min-height: 18px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .feedback.visible { opacity: 1; }
+
+    /* ── Video overlay ── */
+    #overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(12, 43, 21, 0.94);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    #overlay.active { display: flex; }
+
+    #overlay video {
+      max-width: min(92vw, 880px);
+      max-height: 72vh;
+      border-radius: 14px;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+    }
+
+    .skip {
+      background: none;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 100px;
+      color: rgba(255, 255, 255, 0.45);
+      font-family: 'Trebuchet MS', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 9px 24px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .skip:hover {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* ── Confetti canvas ── */
+    #cfv {
+      position: fixed;
+      inset: 0;
+      z-index: 210;
+      pointer-events: none;
+    }
+
+    /* ── Animations ── */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%       { transform: translateX(-7px); }
+      40%       { transform: translateX(7px); }
+      60%       { transform: translateX(-4px); }
+      80%       { transform: translateX(4px); }
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 520px) {
+      .card { padding: 36px 18px 30px; }
+      .bcg-mark { letter-spacing: 5px; }
+      .wrd { font-size: 14px; padding: 9px 10px; }
+      .word-row { gap: 12px 8px; }
+      .cta { padding: 14px 36px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Overlapping circles background -->
+<div class="bg">
+  <div class="bg-circle bg-left"></div>
+  <div class="bg-circle bg-right"></div>
+</div>
+
+<!-- Confetti (renders above video overlay during celebration) -->
+<canvas id="cfv"></canvas>
+
+<!-- Puzzle card -->
+<main class="card">
+  <h2 class="tagline-title">Unscramble each word to reveal our new tagline:</h2>
+  <h1 class="bcg-mark">BCG.</h1>
+
+  <div class="word-row" id="wordRow"></div>
+
+  <button class="cta" id="revealBtn">Reveal</button>
+  <p class="feedback" id="feedback">Not quite — check the highlighted words.</p>
+</main>
+
+<!-- Video overlay -->
+<div id="overlay">
+  <video id="vid" playsinline>
+    <source src="Media2.mp4" type="video/mp4" />
+  </video>
+  <button class="skip" id="skipBtn">Skip &rsaquo;</button>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ── Config ── */
+  const SHAREPOINT_URL = 'https://bcgcloudeur.sharepoint.com/:p:/s/ChiefofStaff/IQCzxBFRjMzMTpGkC1E6zJbQAS9p5iPGQCp_URjvNrw21ic?e=O7Vacu';
+
+  const WORDS = [
+    { word: 'Where',     scrambled: 'RWEEH'     },
+    { word: 'strategic', scrambled: 'TICERAGTS' },
+    { word: 'clarity',   scrambled: 'TYRALCI'   },
+    { word: 'meets',     scrambled: 'EMTES'      },
+    { word: 'applied',   scrambled: 'DPLIPAE'   },
+    { word: 'AI',        scrambled: 'IA'         },
+  ];
+
+  /* ── Build puzzle tiles ── */
+  const rowEl     = document.getElementById('wordRow');
+  const revealBtn = document.getElementById('revealBtn');
+  const feedEl    = document.getElementById('feedback');
+  const overlay   = document.getElementById('overlay');
+  const vid       = document.getElementById('vid');
+  const skipBtn   = document.getElementById('skipBtn');
+
+  const inputs = WORDS.map(function (w, i) {
+    var tile = document.createElement('div');
+    tile.className = 'tile';
+
+    var hint = document.createElement('span');
+    hint.className = 'scramble-hint';
+    hint.textContent = w.scrambled;
+    tile.appendChild(hint);
+
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.className = 'wrd';
+    inp.autocomplete = 'off';
+    inp.setAttribute('autocorrect', 'off');
+    inp.setAttribute('spellcheck', 'false');
+    inp.placeholder = Array(w.word.length + 1).join('·');
+    inp.style.width = Math.max(64, w.word.length * 15 + 28) + 'px';
+
+    inp.addEventListener('input', function () {
+      if (norm(inp.value) === norm(w.word)) {
+        inp.classList.add('solved');
+        inp.value = w.word;
+        var next = inputs[i + 1];
+        if (next) setTimeout(function () { next.focus(); }, 40);
+      } else {
+        inp.classList.remove('solved');
+      }
+    });
+
+    inp.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') attempt();
+    });
+
+    tile.appendChild(inp);
+    rowEl.appendChild(tile);
+    return inp;
+  });
+
+  /* ── Helpers ── */
+  function norm(s) { return s.trim().toLowerCase(); }
+
+  /* ── Attempt solve ── */
+  function attempt() {
+    var wrong = inputs.filter(function (inp, i) {
+      return norm(inp.value) !== norm(WORDS[i].word);
+    });
+
+    if (wrong.length === 0) {
+      feedEl.classList.remove('visible');
+      celebrate();
+    } else {
+      feedEl.classList.add('visible');
+      wrong.forEach(function (inp) {
+        inp.style.animation = 'none';
+        void inp.offsetWidth; // reflow to restart animation
+        inp.style.animation = 'shake 0.35s ease';
+      });
+    }
+  }
+
+  revealBtn.addEventListener('click', attempt);
+
+  /* ── Celebration: confetti + video ── */
+  function celebrate() {
+    launchConfetti();
+
+    /* Show video immediately so autoplay captures the user gesture */
+    overlay.classList.add('active');
+    vid.play().catch(function () {
+      vid.controls = true; /* Fallback: show controls if autoplay is blocked */
+    });
+    vid.addEventListener('ended', redirect, { once: true });
+  }
+
+  function redirect() {
+    window.location.href = SHAREPOINT_URL;
+  }
+
+  skipBtn.addEventListener('click', redirect);
+
+  /* ── Confetti ── */
+  function launchConfetti() {
+    var cv  = document.getElementById('cfv');
+    var ctx = cv.getContext('2d');
+    var W   = cv.width  = window.innerWidth;
+    var H   = cv.height = window.innerHeight;
+
+    var COLS = ['#20BF61', '#0C2B15', '#90d8ee', '#cdf5be', '#ffffff', '#a2e8c8'];
+    var pts  = [];
+    for (var k = 0; k < 150; k++) {
+      pts.push({
+        x:   Math.random() * W,
+        y:   -20 - Math.random() * 130,
+        vy:  2.4 + Math.random() * 2.6,
+        vx:  (Math.random() - 0.5) * 1.8,
+        r:   5   + Math.random() * 5,
+        col: COLS[Math.floor(Math.random() * COLS.length)],
+        ta:  Math.random() * Math.PI * 2,
+        tai: 0.04 + Math.random() * 0.06,
+      });
+    }
+
+    var raf;
+    var start = performance.now();
+
+    function draw(ts) {
+      ctx.clearRect(0, 0, W, H);
+      pts.forEach(function (p) {
+        p.ta += p.tai;
+        p.y  += p.vy;
+        p.x  += p.vx + Math.sin(p.ta) * 0.5;
+        ctx.beginPath();
+        ctx.lineWidth   = p.r / 2;
+        ctx.strokeStyle = p.col;
+        ctx.moveTo(p.x + Math.sin(p.ta) * 5, p.y);
+        ctx.lineTo(p.x,                        p.y + p.r);
+        ctx.stroke();
+      });
+      if (ts - start < 4500) {
+        raf = requestAnimationFrame(draw);
+      } else {
+        ctx.clearRect(0, 0, W, H);
+      }
+    }
+
+    raf = requestAnimationFrame(draw);
+  }
+
+})();
+</script>
+
+</body>
+</html>
