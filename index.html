@@ -222,6 +222,100 @@
       border-color: rgba(255, 255, 255, 0.5);
     }
 
+    /* ── Event details overlay ── */
+    #eventOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: var(--dark);
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+    }
+
+    #eventOverlay.active { display: flex; }
+
+    .event-card {
+      text-align: center;
+      max-width: 580px;
+      width: 100%;
+      animation: fadeUp 0.7s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .event-bcg {
+      font-family: 'Trebuchet MS', Arial, sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 6px;
+      color: var(--green);
+      margin-bottom: 28px;
+      text-transform: uppercase;
+    }
+
+    .event-title {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: clamp(22px, 4vw, 34px);
+      font-weight: normal;
+      color: #ffffff;
+      line-height: 1.3;
+      margin-bottom: 10px;
+    }
+
+    .event-date {
+      font-family: 'Trebuchet MS', Arial, sans-serif;
+      font-size: clamp(14px, 2vw, 17px);
+      color: var(--green);
+      letter-spacing: 1px;
+      margin-bottom: 32px;
+    }
+
+    .event-times {
+      list-style: none;
+      display: inline-block;
+      text-align: left;
+      margin-bottom: 36px;
+      width: 100%;
+    }
+
+    .event-times li {
+      font-family: 'Trebuchet MS', Arial, sans-serif;
+      font-size: clamp(13px, 1.8vw, 15px);
+      color: rgba(255, 255, 255, 0.82);
+      padding: 11px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      line-height: 1.5;
+    }
+
+    .event-times li:first-child { border-top: 1px solid rgba(255, 255, 255, 0.08); }
+
+    .event-times strong {
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .event-signoff {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: clamp(20px, 3.2vw, 28px);
+      font-style: italic;
+      color: #ffffff;
+    }
+
+    /* ── Tip text ── */
+    .tip {
+      margin-top: 14px;
+      font-family: 'Trebuchet MS', Arial, sans-serif;
+      font-size: 12px;
+      color: var(--dark);
+      opacity: 0.38;
+      font-style: italic;
+    }
+
     /* ── Confetti canvas ── */
     #cfv {
       position: fixed;
@@ -269,6 +363,7 @@
 
   <button class="cta" id="revealBtn">Reveal</button>
   <p class="feedback" id="feedback">Not quite — check the highlighted words.</p>
+  <p class="tip">(Tip: Use Claude or ChatGPT to help unscramble the letters)</p>
 </main>
 
 <!-- Video overlay -->
@@ -279,12 +374,25 @@
   <button class="skip" id="skipBtn">Skip &rsaquo;</button>
 </div>
 
+<!-- Event details overlay -->
+<div id="eventOverlay">
+  <div class="event-card">
+    <p class="event-bcg">BCG.</p>
+    <h2 class="event-title">Global Townhall | 2030 Strategy</h2>
+    <p class="event-date">Thursday, May 28</p>
+    <ul class="event-times">
+      <li><strong>Option 1</strong> &nbsp;|&nbsp; 06:00–07:00 ET &nbsp;/&nbsp; 12:00–13:00 CET &nbsp;/&nbsp; 18:00–19:00 SIN</li>
+      <li><strong>Option 2</strong> &nbsp;|&nbsp; 13:00–14:00 ET &nbsp;/&nbsp; 19:00–20:00 CET &nbsp;/&nbsp; 01:00–02:00 SIN <span style="opacity:0.6">(+1)</span></li>
+    </ul>
+    <p class="event-signoff">See you there.</p>
+  </div>
+</div>
+
 <script>
 (function () {
   'use strict';
 
   /* ── Config ── */
-  const SHAREPOINT_URL = 'https://bcgcloudeur.sharepoint.com/:p:/s/ChiefofStaff/IQCzxBFRjMzMTpGkC1E6zJbQAS9p5iPGQCp_URjvNrw21ic?e=O7Vacu';
 
   const WORDS = [
     { word: 'Where',     scrambled: 'RWEEH'     },
@@ -374,14 +482,16 @@
     vid.play().catch(function () {
       vid.controls = true; /* Fallback: show controls if autoplay is blocked */
     });
-    vid.addEventListener('ended', redirect, { once: true });
+    vid.addEventListener('ended', showEventDetails, { once: true });
   }
 
-  function redirect() {
-    window.location.href = SHAREPOINT_URL;
+  function showEventDetails() {
+    overlay.classList.remove('active');
+    vid.pause();
+    document.getElementById('eventOverlay').classList.add('active');
   }
 
-  skipBtn.addEventListener('click', redirect);
+  skipBtn.addEventListener('click', showEventDetails);
 
   /* ── Confetti ── */
   function launchConfetti() {
