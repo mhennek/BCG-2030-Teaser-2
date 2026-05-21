@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; media-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'none';" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; media-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'none';" />
   <title>BCG 2030 Townhall — Your Guess</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -122,11 +122,7 @@
       font-size: 12.5px;
       color: #a03030;
       min-height: 18px;
-      opacity: 0;
-      transition: opacity 0.2s;
     }
-
-    .feedback.visible { opacity: 1; }
 
     /* ── Video overlay ── */
     #overlay {
@@ -361,7 +357,7 @@
       <button class="cta" id="submitBtn">Submit</button>
     </div>
 
-    <p class="feedback" id="feedback">Please type a guess before submitting.</p>
+    <p class="feedback" id="feedback" aria-live="polite"></p>
   </section>
 </main>
 
@@ -383,181 +379,20 @@
       <li><strong>Option 2</strong> &nbsp;|&nbsp; 13:00–14:00 ET &nbsp;/&nbsp; 19:00–20:00 CET &nbsp;/&nbsp; 01:00–02:00 SIN <span style="opacity:0.6">(+1)</span> &nbsp;—&nbsp; <a href="https://bcg.zoom.us/webinar/register/WN_aILSf7WPRZqMh-JDrr4vMQ" target="_blank" rel="noopener noreferrer" style="color:var(--green);">Register here</a></li>
     </ul>
     <p class="event-signoff">See you there.</p>
+    <button class="skip" id="closeEventBtn" type="button">Close</button>
   </div>
 </div>
 
 
 <!-- Word cloud view -->
 <section class="wordcloud-view" id="wcView">
-  <h1 class="wc-title">Voices of BCG 2030</h1>
+  <h2 class="wc-title">Voices of BCG 2030</h2>
   <p class="wc-sub">What happens when we combine Strategic Clarity with Action and Applied AI?</p>
   <div class="wc-cloud" id="wcCloud"></div>
   <p class="wc-meta" id="wcMeta"></p>
 </section>
 
-<script>
-(function () {
-  'use strict';
-
-  var STORAGE_KEY = 'th_answers';
-
-  var input      = document.getElementById('guessInput');
-  var submitBtn  = document.getElementById('submitBtn');
-  var feedback   = document.getElementById('feedback');
-  var overlay    = document.getElementById('overlay');
-  var vid        = document.getElementById('vid');
-  var skipBtn    = document.getElementById('skipBtn');
-
-  /* ── Storage helpers ── */
-  function loadAnswers() {
-    try {
-      var raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return [];
-      var parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (e) {
-      return [];
-    }
-  }
-
-  function saveAnswer(text) {
-    var list = loadAnswers();
-    list.push({ answer: text, timestamp: Date.now() });
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-    } catch (e) {
-      /* storage full or disabled — ignore silently */
-    }
-  }
-
-  /* ── Submit flow ── */
-  function submitGuess() {
-    var value = input.value.trim();
-    if (!value) {
-      feedback.classList.add('visible');
-      input.focus();
-      return;
-    }
-    feedback.classList.remove('visible');
-    saveAnswer(value);
-
-    overlay.classList.add('active');
-    vid.play().catch(function () { vid.controls = true; });
-  }
-
-  submitBtn.addEventListener('click', submitGuess);
-  input.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') submitGuess();
-  });
-
-  function showEventDetails() {
-    overlay.classList.remove('active');
-    vid.pause();
-    document.getElementById('eventOverlay').classList.add('active');
-  }
-  vid.addEventListener('ended', showEventDetails, { once: true });
-  skipBtn.addEventListener('click', showEventDetails);
-
-  /* ── Word cloud view (#wordcloud) ── */
-  var STOPWORDS = {
-    'the':1,'a':1,'an':1,'and':1,'or':1,'of':1,'to':1,'in':1,'on':1,'at':1,
-    'is':1,'it':1,'its':1,'be':1,'are':1,'was':1,'were':1,'for':1,'with':1,
-    'as':1,'by':1,'that':1,'this':1,'these':1,'those':1,'i':1,'we':1,'our':1,
-    'you':1,'your':1,'they':1,'their':1,'but':1,'so':1,'if':1
-  };
-
-  var GREEN_SHADES = [
-    '#0C2B15', '#134d27', '#1a6e38', '#1f9a51', '#20BF61',
-    '#3fcf78', '#6bd996', '#92e2b1'
-  ];
-
-  function tokenize(s) {
-    return s
-      .toLowerCase()
-      .replace(/[^\p{L}\p{N}\s'-]/gu, ' ')
-      .split(/\s+/)
-      .filter(function (w) { return w && w.length > 1 && !STOPWORDS[w]; });
-  }
-
-  function plural(n, word) {
-    return n + ' ' + word + (n === 1 ? '' : 's');
-  }
-
-  function renderWordCloud() {
-    var cloud = document.getElementById('wcCloud');
-    var meta  = document.getElementById('wcMeta');
-    cloud.innerHTML = '';
-
-    var answers = loadAnswers();
-    if (answers.length === 0) {
-      cloud.innerHTML = '<p class="wc-empty">No guesses yet.</p>';
-      meta.textContent = '';
-      return;
-    }
-
-    var counts = Object.create(null);
-    answers.forEach(function (a) {
-      tokenize(a.answer || '').forEach(function (w) {
-        counts[w] = (counts[w] || 0) + 1;
-      });
-    });
-
-    var entries = Object.keys(counts).map(function (w) {
-      return { word: w, count: counts[w] };
-    });
-
-    if (entries.length === 0) {
-      cloud.innerHTML = '<p class="wc-empty">No meaningful words found yet.</p>';
-      meta.textContent = plural(answers.length, 'answer') + ' stored';
-      return;
-    }
-
-    var max = entries.reduce(function (m, e) { return e.count > m ? e.count : m; }, 1);
-    var min = entries.reduce(function (m, e) { return e.count < m ? e.count : m; }, max);
-
-    /* Sort so most common words are placed first (visually centered-ish) */
-    entries.sort(function (a, b) { return b.count - a.count; });
-
-    var MIN_PX = 14;
-    var MAX_PX = 64;
-
-    entries.forEach(function (e) {
-      var ratio = max === min ? 1 : (e.count - min) / (max - min);
-      var size  = MIN_PX + ratio * (MAX_PX - MIN_PX);
-      var color = GREEN_SHADES[Math.min(
-        GREEN_SHADES.length - 1,
-        Math.floor((1 - ratio) * GREEN_SHADES.length)
-      )];
-
-      var span = document.createElement('span');
-      span.className = 'wc-word';
-      span.textContent = e.word;
-      span.style.fontSize = size.toFixed(1) + 'px';
-      span.style.color = color;
-      span.style.fontWeight = ratio > 0.6 ? '700' : (ratio > 0.3 ? '600' : '400');
-      span.title = plural(e.count, 'mention');
-      cloud.appendChild(span);
-    });
-
-    meta.textContent = plural(answers.length, 'answer') + ' · ' + plural(entries.length, 'unique word');
-  }
-
-  function applyRoute() {
-    if (window.location.hash === '#wordcloud') {
-      document.body.classList.add('wordcloud-mode');
-      document.getElementById('wcView').classList.add('active');
-      renderWordCloud();
-    } else {
-      document.body.classList.remove('wordcloud-mode');
-      document.getElementById('wcView').classList.remove('active');
-    }
-  }
-
-  window.addEventListener('hashchange', applyRoute);
-  applyRoute();
-
-})();
-</script>
+<script src="app.js"></script>
 
 </body>
 </html>
