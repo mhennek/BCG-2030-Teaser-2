@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BCG — Something New Is Here</title>
+  <title>BCG 2030 Townhall — Your Guess</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -19,93 +19,60 @@
       font-family: Georgia, 'Times New Roman', serif;
       color: var(--dark);
       display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 24px 32px;
+    }
+
+    /* ── Page stack: Venn image with card overlapping its bottom 25% ── */
+    .page {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      width: 100%;
     }
 
-    /* ── Background circles (recreated from brand asset) ── */
-    .bg {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      overflow: hidden;
+    .venn {
+      display: block;
+      width: 88vmin;
+      max-width: 100%;
+      max-height: 62vh;
+      height: auto;
+      object-fit: contain;
     }
 
-    .bg-circle {
-      position: absolute;
-      border-radius: 50%;
-      top: 50%;
-    }
-
-    .bg-left {
-      width: 62vmin;
-      height: 62vmin;
-      left: calc(50% - 16vmin);
-      transform: translate(-50%, -50%);
-      background: radial-gradient(circle at 44% 40%, #d8f8be 0%, #86dea0 55%, #a8e890 100%);
-      opacity: 0.72;
-    }
-
-    .bg-right {
-      width: 62vmin;
-      height: 62vmin;
-      left: calc(50% + 16vmin);
-      transform: translate(-50%, -50%);
-      background: radial-gradient(circle at 54% 38%, #c6f0f8 0%, #84d6ee 55%, #aae2f6 100%);
-      opacity: 0.72;
-    }
-
-    /* ── Card ── */
+    /* ── Card (compact, overlaps bottom of Venn) ── */
     .card {
       position: relative;
-      z-index: 1;
+      z-index: 2;
       width: 100%;
-      max-width: 700px;
-      background: rgba(255, 255, 255, 0.62);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      border: 1px solid rgba(32, 191, 97, 0.2);
-      border-radius: 24px;
-      padding: 52px 44px 44px;
-      box-shadow: 0 12px 56px rgba(12, 43, 21, 0.10);
+      max-width: 625px;
+      margin-top: -16vmin;
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(32, 191, 97, 0.25);
+      border-radius: 18px;
+      padding: 22px 36px 20px;
+      box-shadow: 0 10px 36px rgba(12, 43, 21, 0.14);
       text-align: center;
     }
 
-    /* ── Venn diagram ── */
-    .venn-svg {
-      display: block;
-      width: 100%;
-      max-width: 500px;
-      height: auto;
-      margin: 0 auto 22px;
-    }
-
-    .tagline-title {
+    .heading {
       font-family: Georgia, 'Times New Roman', serif;
-      font-size: clamp(20px, 3.2vw, 26px);
+      font-size: clamp(18px, 2.4vw, 22px);
       color: var(--dark);
       font-weight: normal;
-      line-height: 1.5;
-      margin-bottom: 16px;
+      line-height: 1.3;
+      margin-bottom: 14px;
     }
 
-    .bcg-mark {
-      font-family: 'Trebuchet MS', Arial, sans-serif;
-      font-size: clamp(42px, 8vw, 66px);
-      font-weight: 800;
-      letter-spacing: 8px;
-      color: var(--dark);
-      line-height: 1;
-      margin-bottom: 32px;
-    }
-
-    /* ── Guess input ── */
     .guess-input {
       width: 100%;
       max-width: 500px;
-      padding: 12px 18px;
+      padding: 11px 18px;
       border: 1.5px solid rgba(32, 191, 97, 0.35);
       border-radius: 12px;
       font-family: Georgia, serif;
@@ -116,7 +83,7 @@
       outline: none;
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
       -webkit-appearance: none;
-      margin-bottom: 18px;
+      margin-bottom: 14px;
     }
 
     .guess-input:focus {
@@ -124,20 +91,20 @@
       box-shadow: 0 0 0 3px var(--green-bg);
     }
 
-    /* ── Submit button ── */
+    /* ── Submit button (compact CTA) ── */
     .cta {
       background: var(--green);
       color: #fff;
       border: none;
       border-radius: 100px;
-      padding: 13px 42px;
+      padding: 12px 38px;
       font-family: 'Trebuchet MS', Arial, sans-serif;
-      font-size: 13.5px;
+      font-size: 14px;
       font-weight: 700;
-      letter-spacing: 2.4px;
+      letter-spacing: 2.2px;
       text-transform: uppercase;
       cursor: pointer;
-      box-shadow: 0 6px 22px rgba(32, 191, 97, 0.4);
+      box-shadow: 0 5px 18px rgba(32, 191, 97, 0.38);
       transition: transform 0.15s, box-shadow 0.15s;
     }
 
@@ -149,7 +116,7 @@
     .cta:active { transform: translateY(0); }
 
     .feedback {
-      margin-top: 14px;
+      margin-top: 13px;
       font-family: 'Trebuchet MS', sans-serif;
       font-size: 12.5px;
       color: #a03030;
@@ -176,8 +143,8 @@
     #overlay.active { display: flex; }
 
     #overlay video {
-      max-width: min(92vw, 880px);
-      max-height: 72vh;
+      max-width: min(96vw, 1320px);
+      max-height: 95vh;
       border-radius: 14px;
       box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
     }
@@ -213,21 +180,17 @@
       justify-content: center;
       padding: 32px;
     }
-
     #eventOverlay.active { display: flex; }
-
     .event-card {
       text-align: center;
-      max-width: 580px;
+      max-width: 620px;
       width: 100%;
       animation: fadeUp 0.7s ease;
     }
-
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(22px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-
     .event-bcg {
       font-family: 'Trebuchet MS', Arial, sans-serif;
       font-size: 13px;
@@ -237,7 +200,6 @@
       margin-bottom: 28px;
       text-transform: uppercase;
     }
-
     .event-title {
       font-family: Georgia, 'Times New Roman', serif;
       font-size: clamp(22px, 4vw, 34px);
@@ -246,7 +208,6 @@
       line-height: 1.3;
       margin-bottom: 10px;
     }
-
     .event-date {
       font-family: 'Trebuchet MS', Arial, sans-serif;
       font-size: clamp(14px, 2vw, 17px);
@@ -254,7 +215,6 @@
       letter-spacing: 1px;
       margin-bottom: 32px;
     }
-
     .event-times {
       list-style: none;
       display: inline-block;
@@ -262,7 +222,6 @@
       margin-bottom: 36px;
       width: 100%;
     }
-
     .event-times li {
       font-family: 'Trebuchet MS', Arial, sans-serif;
       font-size: clamp(13px, 1.8vw, 15px);
@@ -271,14 +230,8 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       line-height: 1.5;
     }
-
     .event-times li:first-child { border-top: 1px solid rgba(255, 255, 255, 0.08); }
-
-    .event-times strong {
-      color: #ffffff;
-      font-weight: 700;
-    }
-
+    .event-times strong { color: #ffffff; font-weight: 700; }
     .event-signoff {
       font-family: Georgia, 'Times New Roman', serif;
       font-size: clamp(20px, 3.2vw, 28px);
@@ -286,77 +239,119 @@
       color: #ffffff;
     }
 
-    /* ── Confetti canvas ── */
-    #cfv {
-      position: fixed;
-      inset: 0;
-      z-index: 210;
-      pointer-events: none;
+    /* ── Word cloud view ── */
+    .wordcloud-view {
+      display: none;
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1000px;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(32, 191, 97, 0.2);
+      border-radius: 24px;
+      padding: 44px 36px;
+      box-shadow: 0 12px 56px rgba(12, 43, 21, 0.10);
+      text-align: center;
+    }
+
+    .wordcloud-view.active { display: block; margin: auto 0; }
+
+    body.wordcloud-mode .page { display: none; }
+
+    .wc-title {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: clamp(22px, 3vw, 28px);
+      color: var(--dark);
+      margin-bottom: 8px;
+    }
+
+    .wc-sub {
+      font-family: 'Trebuchet MS', sans-serif;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 28px;
+    }
+
+    .wc-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 18px;
+      justify-content: center;
+      align-items: baseline;
+      padding: 14px;
+      min-height: 200px;
+    }
+
+    .wc-word {
+      font-family: Georgia, 'Times New Roman', serif;
+      line-height: 1.1;
+      transition: transform 0.2s;
+    }
+
+    .wc-word:hover { transform: scale(1.08); }
+
+    .wc-empty {
+      font-family: 'Trebuchet MS', sans-serif;
+      font-size: 14px;
+      color: var(--dark);
+      opacity: 0.55;
+      padding: 60px 0;
+    }
+
+    .wc-meta {
+      margin-top: 22px;
+      font-family: 'Trebuchet MS', sans-serif;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--dark);
+      opacity: 0.5;
     }
 
     /* ── Mobile ── */
     @media (max-width: 520px) {
-      .card { padding: 36px 18px 30px; }
-      .bcg-mark { letter-spacing: 5px; }
-      .venn-svg { margin-bottom: 16px; }
-      .guess-input { font-size: 16px; padding: 11px 14px; }
-      .cta { padding: 12px 32px; }
+      .card { padding: 18px 20px 16px; margin-top: -17vmin; max-width: 94%; }
+      .venn { width: 96vmin; max-height: 52vh; }
+      .cta { padding: 11px 32px; font-size: 12.5px; }
+      .wordcloud-view { padding: 30px 18px; }
     }
   </style>
 </head>
 <body>
 
-<!-- Overlapping circles background -->
-<div class="bg">
-  <div class="bg-circle bg-left"></div>
-  <div class="bg-circle bg-right"></div>
-</div>
-
-<!-- Confetti (renders above video overlay during celebration) -->
-<canvas id="cfv"></canvas>
-
-<!-- Guess card -->
-<main class="card">
-  <svg class="venn-svg" viewBox="0 0 500 220" preserveAspectRatio="xMidYMid meet"
-       role="img" aria-label="Venn diagram: Strategic Clarity and Action and Applied AI overlap with a question mark">
-    <circle cx="185" cy="110" r="92" fill="rgba(24, 143, 73, 0.16)" stroke="#188F49" stroke-width="2.5" />
-    <circle cx="315" cy="110" r="92" fill="rgba(18, 126, 131, 0.14)" stroke="#127E83" stroke-width="2.5" />
-
-    <text text-anchor="middle" font-family="'Trebuchet MS', Arial, sans-serif"
-          font-weight="700" font-size="14" letter-spacing="0.5" fill="#188F49">
-      <tspan x="135" y="104">Strategic</tspan>
-      <tspan x="135" y="124">Clarity</tspan>
-    </text>
-
-    <text text-anchor="middle" font-family="'Trebuchet MS', Arial, sans-serif"
-          font-weight="700" font-size="14" letter-spacing="0.5" fill="#127E83">
-      <tspan x="365" y="104">Action and</tspan>
-      <tspan x="365" y="124">Applied AI</tspan>
-    </text>
-
-    <text x="250" y="132" text-anchor="middle"
-          font-family="'Trebuchet MS', Arial, sans-serif"
-          font-weight="800" font-size="52" fill="#0C2B15">?</text>
-  </svg>
-
-  <h2 class="tagline-title">What happens when strategic clarity meets applied AI?</h2>
-  <h1 class="bcg-mark">BCG.</h1>
-
-  <input
-    id="guessInput"
-    class="guess-input"
-    type="text"
-    placeholder="Type your guess…"
-    autocomplete="off"
-    autocorrect="off"
-    spellcheck="false"
+<!-- Venn image + guess card -->
+<main class="page">
+  <img
+    class="venn"
+    src="venn.png"
+    alt="Venn diagram: Strategic clarity and Action with Applied AI overlapping with a question in the middle"
   />
 
-  <div>
-    <button class="cta" id="submitBtn">Submit</button>
-  </div>
+  <section class="card" id="card">
+    <div class="form-wrap" id="formWrap">
+      <h1 class="heading">What happens when we combine Strategic Clarity with Action and Applied AI?</h1>
 
-  <p class="feedback" id="feedback">Please type a guess before submitting.</p>
+      <input
+        id="guessInput"
+        class="guess-input"
+        type="text"
+        placeholder="Type your guess…"
+        autocomplete="off"
+        autocorrect="off"
+        spellcheck="false"
+      />
+
+      <div>
+        <button class="cta" id="submitBtn">Submit</button>
+      </div>
+
+      <p class="feedback" id="feedback">Please type a guess before submitting.</p>
+    </div>
+  </section>
 </main>
 
 <!-- Video overlay -->
@@ -370,16 +365,24 @@
 <!-- Event details overlay -->
 <div id="eventOverlay">
   <div class="event-card">
-    <p class="event-bcg">BCG.</p>
     <h2 class="event-title">Global Townhall | 2030 Strategy</h2>
     <p class="event-date">Thursday, May 28</p>
     <ul class="event-times">
-      <li><strong>Option 1</strong> &nbsp;|&nbsp; 06:00–07:00 ET &nbsp;/&nbsp; 12:00–13:00 CET &nbsp;/&nbsp; 18:00–19:00 SIN</li>
-      <li><strong>Option 2</strong> &nbsp;|&nbsp; 13:00–14:00 ET &nbsp;/&nbsp; 19:00–20:00 CET &nbsp;/&nbsp; 01:00–02:00 SIN <span style="opacity:0.6">(+1)</span></li>
+      <li><strong>Option 1</strong> &nbsp;|&nbsp; 06:00–07:00 ET &nbsp;/&nbsp; 12:00–13:00 CET &nbsp;/&nbsp; 18:00–19:00 SIN &nbsp;—&nbsp; <a href="https://bcg.zoom.us/webinar/register/WN_4pEIgQbbTFaB-YyeVfMcDQ" target="_blank" style="color:var(--green);">Register here</a></li>
+      <li><strong>Option 2</strong> &nbsp;|&nbsp; 13:00–14:00 ET &nbsp;/&nbsp; 19:00–20:00 CET &nbsp;/&nbsp; 01:00–02:00 SIN <span style="opacity:0.6">(+1)</span> &nbsp;—&nbsp; <a href="https://bcg.zoom.us/webinar/register/WN_aILSf7WPRZqMh-JDrr4vMQ" target="_blank" style="color:var(--green);">Register here</a></li>
     </ul>
     <p class="event-signoff">See you there.</p>
   </div>
 </div>
+
+
+<!-- Word cloud view -->
+<section class="wordcloud-view" id="wcView">
+  <h1 class="wc-title">Voices of BCG 2030</h1>
+  <p class="wc-sub">What BCGers think sits at the heart</p>
+  <div class="wc-cloud" id="wcCloud"></div>
+  <p class="wc-meta" id="wcMeta"></p>
+</section>
 
 <script>
 (function () {
@@ -387,14 +390,14 @@
 
   var STORAGE_KEY = 'th_answers';
 
-  var input     = document.getElementById('guessInput');
-  var submitBtn = document.getElementById('submitBtn');
-  var feedback  = document.getElementById('feedback');
-  var overlay   = document.getElementById('overlay');
-  var vid       = document.getElementById('vid');
-  var skipBtn   = document.getElementById('skipBtn');
+  var input      = document.getElementById('guessInput');
+  var submitBtn  = document.getElementById('submitBtn');
+  var feedback   = document.getElementById('feedback');
+  var overlay    = document.getElementById('overlay');
+  var vid        = document.getElementById('vid');
+  var skipBtn    = document.getElementById('skipBtn');
 
-  /* ── Storage ── */
+  /* ── Storage helpers ── */
   function loadAnswers() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
@@ -426,7 +429,9 @@
     }
     feedback.classList.remove('visible');
     saveAnswer(value);
-    celebrate();
+
+    overlay.classList.add('active');
+    vid.play().catch(function () { vid.controls = true; });
   }
 
   submitBtn.addEventListener('click', submitGuess);
@@ -434,72 +439,109 @@
     if (e.key === 'Enter') submitGuess();
   });
 
-  /* ── Celebration: confetti + video ── */
-  function celebrate() {
-    launchConfetti();
-
-    overlay.classList.add('active');
-    vid.play().catch(function () {
-      vid.controls = true;
-    });
-    vid.addEventListener('ended', showEventDetails, { once: true });
-  }
-
   function showEventDetails() {
     overlay.classList.remove('active');
     vid.pause();
     document.getElementById('eventOverlay').classList.add('active');
   }
-
+  vid.addEventListener('ended', showEventDetails, { once: true });
   skipBtn.addEventListener('click', showEventDetails);
 
-  /* ── Confetti ── */
-  function launchConfetti() {
-    var cv  = document.getElementById('cfv');
-    var ctx = cv.getContext('2d');
-    var W   = cv.width  = window.innerWidth;
-    var H   = cv.height = window.innerHeight;
+  /* ── Word cloud view (#wordcloud) ── */
+  var STOPWORDS = {
+    'the':1,'a':1,'an':1,'and':1,'or':1,'of':1,'to':1,'in':1,'on':1,'at':1,
+    'is':1,'it':1,'its':1,'be':1,'are':1,'was':1,'were':1,'for':1,'with':1,
+    'as':1,'by':1,'that':1,'this':1,'these':1,'those':1,'i':1,'we':1,'our':1,
+    'you':1,'your':1,'they':1,'their':1,'but':1,'so':1,'if':1
+  };
 
-    var COLS = ['#20BF61', '#0C2B15', '#90d8ee', '#cdf5be', '#ffffff', '#a2e8c8'];
-    var pts  = [];
-    for (var k = 0; k < 150; k++) {
-      pts.push({
-        x:   Math.random() * W,
-        y:   -20 - Math.random() * 130,
-        vy:  2.4 + Math.random() * 2.6,
-        vx:  (Math.random() - 0.5) * 1.8,
-        r:   5   + Math.random() * 5,
-        col: COLS[Math.floor(Math.random() * COLS.length)],
-        ta:  Math.random() * Math.PI * 2,
-        tai: 0.04 + Math.random() * 0.06,
-      });
-    }
+  var GREEN_SHADES = [
+    '#0C2B15', '#134d27', '#1a6e38', '#1f9a51', '#20BF61',
+    '#3fcf78', '#6bd996', '#92e2b1'
+  ];
 
-    var raf;
-    var start = performance.now();
-
-    function draw(ts) {
-      ctx.clearRect(0, 0, W, H);
-      pts.forEach(function (p) {
-        p.ta += p.tai;
-        p.y  += p.vy;
-        p.x  += p.vx + Math.sin(p.ta) * 0.5;
-        ctx.beginPath();
-        ctx.lineWidth   = p.r / 2;
-        ctx.strokeStyle = p.col;
-        ctx.moveTo(p.x + Math.sin(p.ta) * 5, p.y);
-        ctx.lineTo(p.x,                        p.y + p.r);
-        ctx.stroke();
-      });
-      if (ts - start < 4500) {
-        raf = requestAnimationFrame(draw);
-      } else {
-        ctx.clearRect(0, 0, W, H);
-      }
-    }
-
-    raf = requestAnimationFrame(draw);
+  function tokenize(s) {
+    return s
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}\s'-]/gu, ' ')
+      .split(/\s+/)
+      .filter(function (w) { return w && w.length > 1 && !STOPWORDS[w]; });
   }
+
+  function renderWordCloud() {
+    var cloud = document.getElementById('wcCloud');
+    var meta  = document.getElementById('wcMeta');
+    cloud.innerHTML = '';
+
+    var answers = loadAnswers();
+    if (answers.length === 0) {
+      cloud.innerHTML = '<p class="wc-empty">No guesses yet. Be the first at townhall.html.</p>';
+      meta.textContent = '';
+      return;
+    }
+
+    var counts = Object.create(null);
+    answers.forEach(function (a) {
+      tokenize(a.answer || '').forEach(function (w) {
+        counts[w] = (counts[w] || 0) + 1;
+      });
+    });
+
+    var entries = Object.keys(counts).map(function (w) {
+      return { word: w, count: counts[w] };
+    });
+
+    if (entries.length === 0) {
+      cloud.innerHTML = '<p class="wc-empty">No meaningful words found yet.</p>';
+      meta.textContent = answers.length + ' answer' + (answers.length === 1 ? '' : 's') + ' stored';
+      return;
+    }
+
+    var max = entries.reduce(function (m, e) { return e.count > m ? e.count : m; }, 1);
+    var min = entries.reduce(function (m, e) { return e.count < m ? e.count : m; }, max);
+
+    /* Sort so most common words are placed first (visually centered-ish) */
+    entries.sort(function (a, b) { return b.count - a.count; });
+
+    var MIN_PX = 14;
+    var MAX_PX = 64;
+
+    entries.forEach(function (e, i) {
+      var ratio = max === min ? 1 : (e.count - min) / (max - min);
+      var size  = MIN_PX + ratio * (MAX_PX - MIN_PX);
+      var color = GREEN_SHADES[Math.min(
+        GREEN_SHADES.length - 1,
+        Math.floor((1 - ratio) * GREEN_SHADES.length)
+      )];
+
+      var span = document.createElement('span');
+      span.className = 'wc-word';
+      span.textContent = e.word;
+      span.style.fontSize = size.toFixed(1) + 'px';
+      span.style.color = color;
+      span.style.fontWeight = ratio > 0.6 ? '700' : (ratio > 0.3 ? '600' : '400');
+      span.title = e.count + ' mention' + (e.count === 1 ? '' : 's');
+      cloud.appendChild(span);
+    });
+
+    meta.textContent =
+      answers.length + ' answer' + (answers.length === 1 ? '' : 's') + ' · ' +
+      entries.length + ' unique word' + (entries.length === 1 ? '' : 's');
+  }
+
+  function applyRoute() {
+    if (window.location.hash === '#wordcloud') {
+      document.body.classList.add('wordcloud-mode');
+      document.getElementById('wcView').classList.add('active');
+      renderWordCloud();
+    } else {
+      document.body.classList.remove('wordcloud-mode');
+      document.getElementById('wcView').classList.remove('active');
+    }
+  }
+
+  window.addEventListener('hashchange', applyRoute);
+  applyRoute();
 
 })();
 </script>
