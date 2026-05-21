@@ -35,6 +35,8 @@
   }
 
   /* ── Submit flow ── */
+  let submitted = false;
+
   function submitGuess() {
     const value = input.value.trim();
     if (!value) {
@@ -45,6 +47,7 @@
     feedback.textContent = '';
     saveAnswer(value);
 
+    submitted = true;
     overlay.classList.add('active');
     vid.play().catch(function () { vid.controls = true; });
   }
@@ -61,7 +64,9 @@
     closeEventBtn.focus();
   }
   vid.addEventListener('ended', showEventDetails, { once: true });
-  vid.addEventListener('error', showEventDetails);
+  vid.addEventListener('error', function () {
+    if (submitted) showEventDetails();
+  });
   skipBtn.addEventListener('click', showEventDetails);
 
   function closeEventDetails() {
