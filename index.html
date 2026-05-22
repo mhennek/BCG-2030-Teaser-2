@@ -247,6 +247,18 @@
       color: #ffffff;
     }
 
+    /* ── Word cloud password gate ── */
+    .wc-gate {
+      display: none;
+    }
+
+    .wc-gate.active {
+      display: block;
+      margin: auto 0;
+    }
+
+    body.gate-mode .page { display: none; }
+
     /* ── Word cloud view ── */
     .wordcloud-view {
       display: none;
@@ -383,6 +395,28 @@
   </div>
 </div>
 
+
+<!-- Word cloud password gate -->
+<section class="card wc-gate" id="wcGate">
+  <h2 class="heading">Enter password to view the word cloud</h2>
+
+  <input
+    id="wcPasswordInput"
+    class="guess-input"
+    type="password"
+    maxlength="200"
+    placeholder="Password"
+    autocomplete="off"
+    autocorrect="off"
+    spellcheck="false"
+  />
+
+  <div>
+    <button class="cta" id="wcUnlockBtn" type="button">Unlock</button>
+  </div>
+
+  <p class="feedback" id="wcGateFeedback" aria-live="polite"></p>
+</section>
 
 <!-- Word cloud view -->
 <section class="wordcloud-view" id="wcView">

@@ -11,6 +11,14 @@
   const skipBtn        = document.getElementById('skipBtn');
   const eventOverlay   = document.getElementById('eventOverlay');
   const closeEventBtn  = document.getElementById('closeEventBtn');
+  const wcGate          = document.getElementById('wcGate');
+  const wcView          = document.getElementById('wcView');
+  const wcPasswordInput = document.getElementById('wcPasswordInput');
+  const wcUnlockBtn     = document.getElementById('wcUnlockBtn');
+  const wcGateFeedback  = document.getElementById('wcGateFeedback');
+
+  const WC_PASSWORD    = 'K7m-Qz9p-R2vN';
+  const WC_UNLOCK_KEY  = 'th_wc_unlocked';
 
   /* ── Storage helpers ── */
   function loadAnswers() {
@@ -172,14 +180,51 @@
     meta.textContent = plural(answers.length, 'answer') + ' · ' + plural(entries.length, 'unique word');
   }
 
+  function isUnlocked() {
+    try {
+      return sessionStorage.getItem(WC_UNLOCK_KEY) === '1';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function tryUnlock() {
+    if (wcPasswordInput.value === WC_PASSWORD) {
+      try { sessionStorage.setItem(WC_UNLOCK_KEY, '1'); } catch (e) { /* storage disabled */ }
+      wcPasswordInput.value = '';
+      wcGateFeedback.textContent = '';
+      applyRoute();
+    } else {
+      wcGateFeedback.textContent = 'Incorrect password.';
+      wcPasswordInput.select();
+    }
+  }
+
+  wcUnlockBtn.addEventListener('click', tryUnlock);
+  wcPasswordInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') tryUnlock();
+  });
+
   function applyRoute() {
     if (window.location.hash === '#wordcloud') {
-      document.body.classList.add('wordcloud-mode');
-      document.getElementById('wcView').classList.add('active');
-      renderWordCloud();
+      if (isUnlocked()) {
+        document.body.classList.remove('gate-mode');
+        document.body.classList.add('wordcloud-mode');
+        wcGate.classList.remove('active');
+        wcView.classList.add('active');
+        renderWordCloud();
+      } else {
+        document.body.classList.remove('wordcloud-mode');
+        document.body.classList.add('gate-mode');
+        wcView.classList.remove('active');
+        wcGate.classList.add('active');
+        wcPasswordInput.focus();
+      }
     } else {
       document.body.classList.remove('wordcloud-mode');
-      document.getElementById('wcView').classList.remove('active');
+      document.body.classList.remove('gate-mode');
+      wcGate.classList.remove('active');
+      wcView.classList.remove('active');
     }
   }
 
