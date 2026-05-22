@@ -55,17 +55,12 @@ App with two HTTP-triggered functions:
 - **App setting `STORAGE_CONNECTION_STRING`** — Azure portal → Function App →
   Configuration. Connection string for the Azure Storage account that holds
   submissions.
-  - **TODO for handover**: fill in the exact storage type (Table / Blob /
-    CosmosDB / Queue) and the row schema once known.
 - **CORS** — must allow the origin the page is served from. A misconfigured
   CORS list means submissions fail silently: the browser blocks the response
   and `app.js`'s `.catch` swallows it ([app.js:56-58](app.js#L56)).
 - **Authentication** — currently anonymous / public. Anyone with the URL can
   submit (spam risk on consumption pricing) or read all answers via
-  `GetAnswers`. Decide before going live: Azure AD-protected Function,
-  function-key header, or IP allowlist.
-
-
+  `GetAnswers`.
 
 ---
 
