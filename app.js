@@ -47,6 +47,14 @@
     feedback.textContent = '';
     saveAnswer(value);
 
+    fetch("https://bcg-townhall-submit-hqeafmg9eccjanen.westeurope-01.azurewebsites.net/api/SubmitAnswer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answer: value })
+    }).catch(function() {
+      // Silent fail — don't interrupt the user experience if this fails
+    });
+
     submitted = true;
     overlay.classList.add('active');
     vid.play().catch(function () { vid.controls = true; });
