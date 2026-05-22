@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- TODO: Replace with BCG production Azure Function URL (used in connect-src below) -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; media-src 'self'; connect-src 'self' https://bcg-townhall-submit-hqeafmg9eccjanen.westeurope-01.azurewebsites.net; frame-ancestors 'none'; base-uri 'self'; form-action 'none';" />
   <title>BCG 2030 Townhall — Your Guess</title>
   <style>
@@ -247,117 +248,6 @@
       color: #ffffff;
     }
 
-    /* ── Word cloud view (large centred card) ── */
-    .wordcloud-view { display: none; }
-
-    .wordcloud-view.active {
-      display: block;
-      position: relative;
-      width: 90vw;
-      height: 75vh;
-      margin: auto 0;
-      background: rgba(255, 255, 255, 0.78);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(32, 191, 97, 0.25);
-      border-radius: 24px;
-      box-shadow: 0 12px 56px rgba(12, 43, 21, 0.14);
-      overflow: hidden;
-    }
-
-    body.wordcloud-mode .page { display: none; }
-
-    .wc-header {
-      position: absolute;
-      top: 28px;
-      left: 0;
-      right: 0;
-      text-align: center;
-      z-index: 2;
-      padding: 0 32px 16px;
-      border-bottom: 1px solid #20BF61;
-      pointer-events: none;
-    }
-
-    .wc-title {
-      font-family: Georgia, 'Times New Roman', serif;
-      font-size: clamp(36px, 4vw, 48px);
-      color: var(--dark);
-      font-weight: normal;
-      margin-bottom: 6px;
-    }
-
-    .wc-sub {
-      font-family: 'Trebuchet MS', sans-serif;
-      font-size: clamp(18px, 2vw, 25px);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--green);
-    }
-
-    .wc-cloud {
-      position: absolute;
-      inset: 0;
-    }
-
-    .wc-word {
-      position: absolute;
-      white-space: nowrap;
-      font-family: Georgia, 'Times New Roman', serif;
-      line-height: 1;
-      opacity: 0;
-      transform: translate(-50%, -50%) scale(0.4);
-      transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
-      pointer-events: none;
-      user-select: none;
-    }
-
-    .wc-word.in {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
-    }
-
-    .wc-empty {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Trebuchet MS', sans-serif;
-      font-size: 16px;
-      color: var(--dark);
-      opacity: 0.55;
-    }
-
-    .wc-meta {
-      position: absolute;
-      bottom: 22px;
-      left: 0;
-      right: 0;
-      text-align: center;
-      font-family: 'Trebuchet MS', sans-serif;
-      font-size: 11px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--dark);
-      opacity: 0.45;
-      pointer-events: none;
-    }
-
-    .wc-watermark {
-      position: absolute;
-      right: 32px;
-      bottom: 18px;
-      font-family: 'Trebuchet MS', Arial, sans-serif;
-      font-weight: 800;
-      font-size: 18px;
-      letter-spacing: 3px;
-      color: rgba(32, 191, 97, 0.3);
-      pointer-events: none;
-      user-select: none;
-      z-index: 3;
-    }
-
     /* ── Mobile ── */
     @media (max-width: 520px) {
       .card { padding: 18px 20px 16px; margin-top: -17vmin; max-width: 94%; }
@@ -420,17 +310,6 @@
   </div>
 </div>
 
-
-<!-- Word cloud view -->
-<section class="wordcloud-view" id="wcView">
-  <header class="wc-header">
-    <h2 class="wc-title">Voices of BCG 2030</h2>
-    <p class="wc-sub">What happens when we combine Strategic Clarity with Action and Applied AI?</p>
-  </header>
-  <div class="wc-cloud" id="wcCloud"></div>
-  <p class="wc-meta" id="wcMeta"></p>
-  <div class="wc-watermark" aria-hidden="true">BCG.</div>
-</section>
 
 <script src="app.js"></script>
 
