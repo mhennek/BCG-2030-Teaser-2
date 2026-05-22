@@ -1,1 +1,16 @@
 .claude/
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / IDE
+*.swp
+*.swo
+*~
+.idea/
+
+# Secrets — never commit a file matching these
+.env
+.env.*
