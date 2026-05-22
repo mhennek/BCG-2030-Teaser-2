@@ -247,89 +247,115 @@
       color: #ffffff;
     }
 
-    /* ── Word cloud password gate ── */
-    .wc-gate {
-      display: none;
-    }
+    /* ── Word cloud view (large centred card) ── */
+    .wordcloud-view { display: none; }
 
-    .wc-gate.active {
+    .wordcloud-view.active {
       display: block;
-      margin: auto 0;
-    }
-
-    body.gate-mode .page { display: none; }
-
-    /* ── Word cloud view ── */
-    .wordcloud-view {
-      display: none;
       position: relative;
-      z-index: 1;
-      width: 100%;
-      max-width: 1000px;
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      border: 1px solid rgba(32, 191, 97, 0.2);
+      width: 90vw;
+      height: 75vh;
+      margin: auto 0;
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(32, 191, 97, 0.25);
       border-radius: 24px;
-      padding: 44px 36px;
-      box-shadow: 0 12px 56px rgba(12, 43, 21, 0.10);
-      text-align: center;
+      box-shadow: 0 12px 56px rgba(12, 43, 21, 0.14);
+      overflow: hidden;
     }
-
-    .wordcloud-view.active { display: block; margin: auto 0; }
 
     body.wordcloud-mode .page { display: none; }
 
+    .wc-header {
+      position: absolute;
+      top: 28px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      z-index: 2;
+      padding: 0 32px 16px;
+      border-bottom: 1px solid #20BF61;
+      pointer-events: none;
+    }
+
     .wc-title {
       font-family: Georgia, 'Times New Roman', serif;
-      font-size: clamp(22px, 3vw, 28px);
+      font-size: clamp(36px, 4vw, 48px);
       color: var(--dark);
-      margin-bottom: 8px;
+      font-weight: normal;
+      margin-bottom: 6px;
     }
 
     .wc-sub {
       font-family: 'Trebuchet MS', sans-serif;
-      font-size: 12px;
+      font-size: clamp(18px, 2vw, 25px);
       letter-spacing: 2px;
       text-transform: uppercase;
       color: var(--green);
-      margin-bottom: 28px;
     }
 
     .wc-cloud {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px 18px;
-      justify-content: center;
-      align-items: baseline;
-      padding: 14px;
-      min-height: 200px;
+      position: absolute;
+      inset: 0;
     }
 
     .wc-word {
+      position: absolute;
+      white-space: nowrap;
       font-family: Georgia, 'Times New Roman', serif;
-      line-height: 1.1;
-      transition: transform 0.2s;
+      line-height: 1;
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.4);
+      transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+      pointer-events: none;
+      user-select: none;
     }
 
-    .wc-word:hover { transform: scale(1.08); }
+    .wc-word.in {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
 
     .wc-empty {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-family: 'Trebuchet MS', sans-serif;
-      font-size: 14px;
+      font-size: 16px;
       color: var(--dark);
       opacity: 0.55;
-      padding: 60px 0;
     }
 
     .wc-meta {
-      margin-top: 22px;
+      position: absolute;
+      bottom: 22px;
+      left: 0;
+      right: 0;
+      text-align: center;
       font-family: 'Trebuchet MS', sans-serif;
       font-size: 11px;
       letter-spacing: 1.5px;
       text-transform: uppercase;
       color: var(--dark);
-      opacity: 0.5;
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    .wc-watermark {
+      position: absolute;
+      right: 32px;
+      bottom: 18px;
+      font-family: 'Trebuchet MS', Arial, sans-serif;
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: 3px;
+      color: rgba(32, 191, 97, 0.3);
+      pointer-events: none;
+      user-select: none;
+      z-index: 3;
     }
 
     /* ── Mobile ── */
@@ -337,7 +363,6 @@
       .card { padding: 18px 20px 16px; margin-top: -17vmin; max-width: 94%; }
       .venn { width: 96vmin; max-height: 52vh; }
       .cta { padding: 11px 32px; font-size: 12.5px; }
-      .wordcloud-view { padding: 30px 18px; }
     }
   </style>
 </head>
@@ -396,34 +421,15 @@
 </div>
 
 
-<!-- Word cloud password gate -->
-<section class="card wc-gate" id="wcGate">
-  <h2 class="heading">Enter password to view the word cloud</h2>
-
-  <input
-    id="wcPasswordInput"
-    class="guess-input"
-    type="password"
-    maxlength="200"
-    placeholder="Password"
-    autocomplete="off"
-    autocorrect="off"
-    spellcheck="false"
-  />
-
-  <div>
-    <button class="cta" id="wcUnlockBtn" type="button">Unlock</button>
-  </div>
-
-  <p class="feedback" id="wcGateFeedback" aria-live="polite"></p>
-</section>
-
 <!-- Word cloud view -->
 <section class="wordcloud-view" id="wcView">
-  <h2 class="wc-title">Voices of BCG 2030</h2>
-  <p class="wc-sub">What happens when we combine Strategic Clarity with Action and Applied AI?</p>
+  <header class="wc-header">
+    <h2 class="wc-title">Voices of BCG 2030</h2>
+    <p class="wc-sub">What happens when we combine Strategic Clarity with Action and Applied AI?</p>
+  </header>
   <div class="wc-cloud" id="wcCloud"></div>
   <p class="wc-meta" id="wcMeta"></p>
+  <div class="wc-watermark" aria-hidden="true">BCG.</div>
 </section>
 
 <script src="app.js"></script>

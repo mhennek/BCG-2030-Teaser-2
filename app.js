@@ -11,14 +11,10 @@
   const skipBtn        = document.getElementById('skipBtn');
   const eventOverlay   = document.getElementById('eventOverlay');
   const closeEventBtn  = document.getElementById('closeEventBtn');
-  const wcGate          = document.getElementById('wcGate');
-  const wcView          = document.getElementById('wcView');
-  const wcPasswordInput = document.getElementById('wcPasswordInput');
-  const wcUnlockBtn     = document.getElementById('wcUnlockBtn');
-  const wcGateFeedback  = document.getElementById('wcGateFeedback');
+  const wcView         = document.getElementById('wcView');
 
-  const WC_PASSWORD    = 'K7m-Qz9p-R2vN';
-  const WC_UNLOCK_KEY  = 'th_wc_unlocked';
+  const WC_HASH         = '#wordcloud';
+  const GET_ANSWERS_URL = 'https://bcg-townhall-submit-hqeafmg9eccjanen.westeurope-01.azurewebsites.net/api/GetAnswers';
 
   /* ── Storage helpers ── */
   function loadAnswers() {
@@ -104,10 +100,27 @@
     'you':1,'your':1,'they':1,'their':1,'but':1,'so':1,'if':1
   };
 
-  const GREEN_SHADES = [
-    '#0C2B15', '#134d27', '#1a6e38', '#1f9a51', '#20BF61',
-    '#3fcf78', '#6bd996', '#92e2b1'
+  /* ── BCG palette (most frequent → least frequent). Indices 7–8 are reserved
+     for single-occurrence words only. ── */
+  const PALETTE = [
+    '#1a5c38', // 0 — most frequent (darkest)
+    '#2e8b57',
+    '#20BF61',
+    '#127E83',
+    '#1aabB3',
+    '#4dd0d8',
+    '#5cd68a',
+    '#a8e8c0',
+    '#a8ecf0'  // 8 — least frequent (lightest), count===1 only
   ];
+
+  function colorForEntry(entry, ratio) {
+    let index = Math.round((1 - ratio) * (PALETTE.length - 1));
+    if (entry.count > 1) {
+      index = Math.min(index, PALETTE.length - 3); // cap at index 6
+    }
+    return PALETTE[index];
+  }
 
   function tokenize(s) {
     return s
@@ -124,9 +137,28 @@
   function renderWordCloud() {
     const cloud = document.getElementById('wcCloud');
     const meta  = document.getElementById('wcMeta');
+    cloud.innerHTML = '<p class="wc-empty">Loading answers…</p>';
+    meta.textContent = '';
+
+    fetch(GET_ANSWERS_URL)
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function (data) {
+        renderCloudFromAnswers(Array.isArray(data) ? data : []);
+      })
+      .catch(function () {
+        /* Silent fallback to localStorage */
+        renderCloudFromAnswers(loadAnswers());
+      });
+  }
+
+  function renderCloudFromAnswers(answers) {
+    const cloud = document.getElementById('wcCloud');
+    const meta  = document.getElementById('wcMeta');
     cloud.innerHTML = '';
 
-    const answers = loadAnswers();
     if (answers.length === 0) {
       cloud.innerHTML = '<p class="wc-empty">No guesses yet.</p>';
       meta.textContent = '';
@@ -146,84 +178,148 @@
 
     if (entries.length === 0) {
       cloud.innerHTML = '<p class="wc-empty">No meaningful words found yet.</p>';
-      meta.textContent = plural(answers.length, 'answer') + ' stored';
+      meta.textContent = answers.length + ' BCGers have submitted a guess';
       return;
     }
 
     const max = entries.reduce(function (m, e) { return e.count > m ? e.count : m; }, 1);
     const min = entries.reduce(function (m, e) { return e.count < m ? e.count : m; }, max);
 
-    /* Sort so most common words are placed first (visually centered-ish) */
+    /* Most-common first so largest words anchor the center of the spiral */
     entries.sort(function (a, b) { return b.count - a.count; });
 
-    const MIN_PX = 14;
-    const MAX_PX = 64;
+    /* Spiral coordinates are relative to the cloud container (the card's
+       interior), not the viewport, so words stay inside the card. */
+    const cloudRect = cloud.getBoundingClientRect();
+    const W = cloudRect.width;
+    const H = cloudRect.height;
+    const vmin = Math.min(W, H);
+
+    const MIN_PX = Math.max(14, Math.min(36, vmin * 0.020));
+    const MAX_PX = Math.max(40, Math.min(180, vmin * 0.110));
 
     entries.forEach(function (e) {
       const ratio = max === min ? 1 : (e.count - min) / (max - min);
-      const size  = MIN_PX + ratio * (MAX_PX - MIN_PX);
-      const color = GREEN_SHADES[Math.min(
-        GREEN_SHADES.length - 1,
-        Math.floor((1 - ratio) * GREEN_SHADES.length)
-      )];
+      e.ratio = ratio;
+      e.fontSize = MIN_PX + ratio * (MAX_PX - MIN_PX);
+      e.fontWeight = ratio > 0.6 ? 700 : (ratio > 0.3 ? 600 : 400);
+      e.color = colorForEntry(e, ratio);
+    });
 
+    /* Spiral placement with collision detection */
+    const measureCanvas = document.createElement('canvas');
+    const mctx = measureCanvas.getContext('2d');
+
+    /* Reserve top space for the CSS-sized title + subtitle + divider; recentre
+       the spiral inside the remaining usable area. Title clamp caps at 48px,
+       subtitle at 25px, plus top offset + padding + buffer ≈ 140. */
+    const TOP_RESERVE    = 140;
+    const BOTTOM_RESERVE = 60;
+    const SIDE_RESERVE   = 16;
+    const GAP            = 6;
+
+    const cx = W / 2;
+    const cy = (TOP_RESERVE + (H - BOTTOM_RESERVE)) / 2;
+
+    /* Spiral parameters — spread across the full usable area instead of
+       packing tightly at the centre */
+    const SPIRAL_ANGLE_STEP  = 0.15;
+    const SPIRAL_RADIUS_STEP = Math.max(1.4, vmin * 0.0035);
+    const T_MAX              = 3000;
+
+    const placed = [];
+    const positions = [];
+
+    function fits(box) {
+      if (box.x - box.w / 2 < SIDE_RESERVE) return false;
+      if (box.x + box.w / 2 > W - SIDE_RESERVE) return false;
+      if (box.y - box.h / 2 < TOP_RESERVE) return false;
+      if (box.y + box.h / 2 > H - BOTTOM_RESERVE) return false;
+      for (let i = 0; i < placed.length; i++) {
+        const p = placed[i];
+        const dx = Math.abs(box.x - p.x);
+        const dy = Math.abs(box.y - p.y);
+        if (dx * 2 < box.w + p.w + GAP && dy * 2 < box.h + p.h + GAP) return false;
+      }
+      return true;
+    }
+
+    entries.forEach(function (e, i) {
+      mctx.font = e.fontWeight + ' ' + e.fontSize + 'px Georgia, serif';
+      const w = mctx.measureText(e.word).width;
+      const h = e.fontSize * 1.05;
+
+      if (i === 0) {
+        /* Largest word always anchors the centre */
+        placed.push({ x: cx, y: cy, w: w, h: h });
+        positions.push({ entry: e, x: cx, y: cy });
+        return;
+      }
+
+      let t = 1;
+      let placedOk = false;
+      while (t < T_MAX && !placedOk) {
+        const angle = t * SPIRAL_ANGLE_STEP;
+        const radius = t * SPIRAL_RADIUS_STEP;
+        const x = cx + Math.cos(angle) * radius;
+        const y = cy + Math.sin(angle) * radius;
+        const box = { x: x, y: y, w: w, h: h };
+        if (fits(box)) {
+          placed.push(box);
+          positions.push({ entry: e, x: x, y: y });
+          placedOk = true;
+        }
+        t++;
+      }
+      /* If still not placed, the spiral ran off-screen — skip silently */
+    });
+
+    /* Build DOM with staggered transition-delay (most frequent reveals first) */
+    const N = positions.length;
+    const totalDuration = 2500;
+    const step = N > 0 ? Math.max(30, Math.min(120, totalDuration / N)) : 0;
+
+    positions.forEach(function (p, i) {
       const span = document.createElement('span');
       span.className = 'wc-word';
-      span.textContent = e.word;
-      span.style.fontSize = size.toFixed(1) + 'px';
-      span.style.color = color;
-      span.style.fontWeight = ratio > 0.6 ? '700' : (ratio > 0.3 ? '600' : '400');
-      span.title = plural(e.count, 'mention');
+      span.textContent = p.entry.word;
+      span.style.left = p.x + 'px';
+      span.style.top = p.y + 'px';
+      span.style.fontSize = p.entry.fontSize.toFixed(1) + 'px';
+      span.style.fontWeight = p.entry.fontWeight;
+      span.style.color = p.entry.color;
+      span.style.transitionDelay = (i * step) + 'ms';
+      span.title = plural(p.entry.count, 'mention');
       cloud.appendChild(span);
     });
 
-    meta.textContent = plural(answers.length, 'answer') + ' · ' + plural(entries.length, 'unique word');
+    /* Force layout so the initial (pre-transition) state is committed,
+       then add .in to trigger the staggered fade/scale */
+    void cloud.offsetHeight;
+    requestAnimationFrame(function () {
+      cloud.querySelectorAll('.wc-word').forEach(function (el) {
+        el.classList.add('in');
+      });
+    });
+
+    meta.textContent = answers.length + ' BCGers have submitted a guess';
   }
 
-  function isUnlocked() {
-    try {
-      return sessionStorage.getItem(WC_UNLOCK_KEY) === '1';
-    } catch (e) {
-      return false;
-    }
-  }
-
-  function tryUnlock() {
-    if (wcPasswordInput.value === WC_PASSWORD) {
-      try { sessionStorage.setItem(WC_UNLOCK_KEY, '1'); } catch (e) { /* storage disabled */ }
-      wcPasswordInput.value = '';
-      wcGateFeedback.textContent = '';
-      applyRoute();
-    } else {
-      wcGateFeedback.textContent = 'Incorrect password.';
-      wcPasswordInput.select();
-    }
-  }
-
-  wcUnlockBtn.addEventListener('click', tryUnlock);
-  wcPasswordInput.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') tryUnlock();
+  /* Re-layout the spiral on viewport changes while the cloud is visible */
+  let wcResizeTimer = null;
+  window.addEventListener('resize', function () {
+    if (!wcView.classList.contains('active')) return;
+    clearTimeout(wcResizeTimer);
+    wcResizeTimer = setTimeout(renderWordCloud, 200);
   });
 
   function applyRoute() {
-    if (window.location.hash === '#wordcloud') {
-      if (isUnlocked()) {
-        document.body.classList.remove('gate-mode');
-        document.body.classList.add('wordcloud-mode');
-        wcGate.classList.remove('active');
-        wcView.classList.add('active');
-        renderWordCloud();
-      } else {
-        document.body.classList.remove('wordcloud-mode');
-        document.body.classList.add('gate-mode');
-        wcView.classList.remove('active');
-        wcGate.classList.add('active');
-        wcPasswordInput.focus();
-      }
+    if (window.location.hash === WC_HASH) {
+      document.body.classList.add('wordcloud-mode');
+      wcView.classList.add('active');
+      renderWordCloud();
     } else {
       document.body.classList.remove('wordcloud-mode');
-      document.body.classList.remove('gate-mode');
-      wcGate.classList.remove('active');
       wcView.classList.remove('active');
     }
   }
